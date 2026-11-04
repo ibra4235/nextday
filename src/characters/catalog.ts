@@ -7,6 +7,15 @@ export type Character = {
   image: ImageSourcePropType;
 };
 
+export function characterById(id: string): Character | null {
+  return CHARACTERS.find((character) => character.id === id) ?? null;
+}
+
+/** Women see the ten female babies. Men see the ten males. */
+export function babiesFor(gender: 'woman' | 'man'): readonly Character[] {
+  return gender === 'man' ? CHARACTERS.slice(10) : CHARACTERS.slice(0, 10);
+}
+
 export const CHARACTERS: readonly Character[] = [
   { id: '01', tr: 'Zeynep', en: 'Olivia', image: require('../../assets/characters/01-gul.jpg') },
   { id: '02', tr: 'Elif', en: 'Emma', image: require('../../assets/characters/02-lila.jpg') },

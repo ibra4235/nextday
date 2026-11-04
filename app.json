@@ -27,10 +27,14 @@
         "expo-localization",
         {
           "supportedLocales": {
-            "ios": ["tr", "en"]
+            "ios": [
+              "tr",
+              "en"
+            ]
           }
         }
-      ]
+      ],
+      "expo-video"
     ]
   }
 }

@@ -3,16 +3,22 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AdminEntry } from '../components/AdminEntry';
+import { BabyStage } from '../components/BabyStage';
 import { EggCracks } from '../components/EggCracks';
+import { characterById } from '../characters/catalog';
+import { HATCH_AT, blockedCare } from '../game/rules';
+import { useNightSleep } from '../game/useNightSleep';
 import { resolveLanguage } from '../i18n/locale';
 import { stringsFor } from '../i18n/strings';
 import { PicturePerformer } from '../motion/PicturePerformer';
 import type { PerformerHandle } from '../motion/usePerformance';
 import type { CareKind } from '../storage/care';
-import { saveCare } from '../storage/care';
+import { loadCares, saveCare } from '../storage/care';
 import { addCrack, loadCracks } from '../storage/cracks';
+import { loadPetId, savePetId } from '../storage/pet';
 import type { Vitals } from '../storage/vitals';
 import { applyCare, isDead, openVitals } from '../storage/vitals';
+import { HatchScreen } from './HatchScreen';
 
 const REPLY_MS = 8000;
 
@@ -30,9 +36,14 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
   const [cracks, setCracks] = useState(() => loadCracks());
   const [reply, setReply] = useState('');
   const [savingKind, setSavingKind] = useState<CareKind | null>(null);
+  const [petId, setPetId] = useState<string | null>(() => loadPetId());
+  const [hatching, setHatching] = useState(() => loadPetId() === null && loadCares().length >= HATCH_AT);
+  const [action, setAction] = useState<CareKind | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const egg = useRef<PerformerHandle>(null);
+  const night = useNightSleep();
   const dead = isDead(vitals);
+  const pet = petId ? characterById(petId) : null;
 
   useEffect(() => {
     return () => {
@@ -57,11 +68,34 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
     talk: copy.talkReply,
   };
 
+  function showLine(line: string) {
+    setReply(line);
+    if (timer.current) {
+      clearTimeout(timer.current);
+    }
+    timer.current = setTimeout(() => setReply(''), REPLY_MS);
+  }
+
   async function onCare(kind: CareKind) {
-    if (savingKind || dead) {
+    if (savingKind || action) {
       return;
     }
-    egg.current?.play(kind);
+    const current = openVitals();
+    setVitals(current);
+    if (isDead(current)) {
+      setReply('');
+      return;
+    }
+    const block = blockedCare(kind, current);
+    if (block) {
+      showLine(block === 'hunger' ? copy.notHungry : copy.notSleepy);
+      return;
+    }
+    if (pet) {
+      setAction(kind);
+    } else {
+      egg.current?.play(kind);
+    }
     setSavingKind(kind);
     try {
       const next = applyCare(kind);
@@ -72,11 +106,12 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
       }
       await saveCare(kind);
       setCracks(addCrack());
-      setReply(replies[kind]);
-      if (timer.current) {
-        clearTimeout(timer.current);
+      if (!pet) {
+        showLine(replies[kind]);
+        if (loadCares().length >= HATCH_AT) {
+          setHatching(true);
+        }
       }
-      timer.current = setTimeout(() => setReply(''), REPLY_MS);
     } catch {
       setReply('');
     } finally {
@@ -84,19 +119,41 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
     }
   }
 
+  if (hatching) {
+    return (
+      <HatchScreen
+        onPick={(id) => {
+          savePetId(id);
+          setPetId(id);
+          setAction(null);
+          setHatching(false);
+        }}
+      />
+    );
+  }
+
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
-      <PicturePerformer
-        ref={egg}
-        source={opening}
-        label={copy.eggLabel}
-        testID="designed-egg"
-        alive={!dead}
-        layout="fill"
-        mouth={{ x: 0.6, y: 0.42 }}
-        overlay={<EggCracks count={cracks} />}
-      />
+      {pet ? (
+        <BabyStage
+          character={pet}
+          action={action}
+          night={!dead && night}
+          onActionEnd={() => setAction(null)}
+        />
+      ) : (
+        <PicturePerformer
+          ref={egg}
+          source={opening}
+          label={copy.eggLabel}
+          testID="designed-egg"
+          alive={!dead}
+          layout="fill"
+          mouth={{ x: 0.6, y: 0.42 }}
+          overlay={<EggCracks count={cracks} />}
+        />
+      )}
       <Meter label={copy.hunger} value={vitals.hunger} testID="hunger-bar" tone="hunger" side="left" />
       <Meter label={copy.sleep} value={vitals.sleep} testID="sleep-bar" tone="sleep" side="right" />
       {dead ? (
@@ -135,9 +192,9 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
               key={kind}
               accessibilityRole="button"
               accessibilityLabel={labels[kind]}
-              accessibilityState={{ disabled: dead }}
+              accessibilityState={{ disabled: dead || action !== null }}
               testID={`care-${kind}`}
-              disabled={dead || savingKind !== null}
+              disabled={dead || savingKind !== null || action !== null}
               onPress={() => {
                 void onCare(kind);
               }}

@@ -1,12 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import { useRef } from 'react';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { BabyStage } from '../components/BabyStage';
 import type { Character } from '../characters/catalog';
 import { resolveLanguage } from '../i18n/locale';
 import { stringsFor } from '../i18n/strings';
-import { PicturePerformer } from '../motion/PicturePerformer';
-import type { PerformerHandle } from '../motion/usePerformance';
 import type { CareKind } from '../storage/care';
 
 const ACTIONS: readonly CareKind[] = ['food', 'milk', 'sleep', 'training', 'talk'];
@@ -20,7 +19,7 @@ export function DragonScreen({ character, onClose }: Props) {
   const language = resolveLanguage();
   const copy = stringsFor(language);
   const name = language === 'en' ? character.en : character.tr;
-  const dragon = useRef<PerformerHandle>(null);
+  const [action, setAction] = useState<CareKind | null>(null);
   const labels: Record<CareKind, string> = {
     food: copy.food,
     milk: copy.milk,
@@ -39,14 +38,7 @@ export function DragonScreen({ character, onClose }: Props) {
         <Text style={styles.title}>{name}</Text>
       </View>
       <View style={styles.stage} testID={`dragon-${character.id}`}>
-        <PicturePerformer
-          ref={dragon}
-          source={character.image}
-          label={name}
-          testID="designed-dragon"
-          layout="frame"
-          mouth={{ x: 0.68, y: 0.44 }}
-        />
+        <BabyStage character={character} action={action} night={false} onActionEnd={() => setAction(null)} />
       </View>
       <View style={styles.row}>
         {ACTIONS.map((kind) => (
@@ -55,7 +47,7 @@ export function DragonScreen({ character, onClose }: Props) {
             accessibilityRole="button"
             accessibilityLabel={labels[kind]}
             testID={`dragon-care-${kind}`}
-            onPress={() => dragon.current?.play(kind)}
+            onPress={() => setAction(kind)}
             style={styles.action}
           >
             <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={styles.actionLabel}>
@@ -92,8 +84,7 @@ const styles = StyleSheet.create({
   },
   stage: {
     flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 16,
+    overflow: 'hidden',
   },
   row: {
     flexDirection: 'row',

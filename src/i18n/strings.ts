@@ -36,6 +36,9 @@ const copy = {
     hunger: 'Açlık',
     died: 'Öldü.',
     characters: 'Karakterler',
+    notHungry: 'Aç değil.',
+    notSleepy: 'Uykusu yok.',
+    chooseBaby: 'Yavruyu seç',
   },
   en: {
     eggLabel: 'Egg',
@@ -72,6 +75,9 @@ const copy = {
     hunger: 'Hunger',
     died: 'It died.',
     characters: 'Characters',
+    notHungry: 'Not hungry.',
+    notSleepy: 'Not sleepy.',
+    chooseBaby: 'Choose your baby',
   },
 } as const;
 
