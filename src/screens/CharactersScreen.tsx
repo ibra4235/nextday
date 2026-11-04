@@ -1,9 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
+import { useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { CHARACTERS } from '../characters/catalog';
+import { CHARACTERS, type Character } from '../characters/catalog';
 import { resolveLanguage } from '../i18n/locale';
 import { stringsFor } from '../i18n/strings';
+import { DragonScreen } from './DragonScreen';
 
 type Props = {
   onClose: () => void;
@@ -12,6 +14,11 @@ type Props = {
 export function CharactersScreen({ onClose }: Props) {
   const language = resolveLanguage();
   const copy = stringsFor(language);
+  const [open, setOpen] = useState<Character | null>(null);
+
+  if (open) {
+    return <DragonScreen character={open} onClose={() => setOpen(null)} />;
+  }
 
   return (
     <View style={styles.screen}>
@@ -26,12 +33,19 @@ export function CharactersScreen({ onClose }: Props) {
         {CHARACTERS.map((character) => {
           const name = language === 'en' ? character.en : character.tr;
           return (
-            <View key={character.id} style={styles.card} testID={`character-${character.id}`}>
+            <Pressable
+              key={character.id}
+              accessibilityRole="button"
+              accessibilityLabel={name}
+              style={styles.card}
+              testID={`character-${character.id}`}
+              onPress={() => setOpen(character)}
+            >
               <View style={styles.frame}>
                 <Image source={character.image} resizeMode="contain" style={styles.image} />
               </View>
               <Text style={styles.name}>{name}</Text>
-            </View>
+            </Pressable>
           );
         })}
       </ScrollView>

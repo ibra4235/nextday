@@ -1,11 +1,13 @@
+import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { AdminEntry } from '../components/AdminEntry';
 import { EggCracks } from '../components/EggCracks';
-import { EggStage } from '../components/EggStage';
 import { resolveLanguage } from '../i18n/locale';
 import { stringsFor } from '../i18n/strings';
+import { VoxelEgg } from '../motion/VoxelEgg';
+import type { PerformerHandle } from '../motion/usePerformance';
 import type { CareKind } from '../storage/care';
 import { saveCare } from '../storage/care';
 import { addCrack, loadCracks } from '../storage/cracks';
@@ -28,6 +30,9 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
   const [reply, setReply] = useState('');
   const [savingKind, setSavingKind] = useState<CareKind | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const egg = useRef<PerformerHandle>(null);
+  const { width, height } = useWindowDimensions();
+  const eggWidth = Math.max(210, Math.min(width - 148, height * 0.5, 460));
   const dead = isDead(vitals);
 
   useEffect(() => {
@@ -57,6 +62,7 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
     if (savingKind || dead) {
       return;
     }
+    egg.current?.play(kind);
     setSavingKind(kind);
     try {
       const next = applyCare(kind);
@@ -80,8 +86,13 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
   }
 
   return (
-    <EggStage animate={false}>
-      <EggCracks count={cracks} />
+    <View style={styles.screen}>
+      <StatusBar style="light" />
+      <View style={styles.stage} pointerEvents="none">
+        <View style={{ width: eggWidth }}>
+          <VoxelEgg ref={egg} alive={!dead} overlay={<EggCracks count={cracks} />} />
+        </View>
+      </View>
       <Meter label={copy.hunger} value={vitals.hunger} testID="hunger-bar" tone="hunger" side="left" />
       <Meter label={copy.sleep} value={vitals.sleep} testID="sleep-bar" tone="sleep" side="right" />
       {dead ? (
@@ -135,7 +146,7 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
           ))}
         </View>
       </View>
-    </EggStage>
+    </View>
   );
 }
 
@@ -169,6 +180,16 @@ function Meter({
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#1C1410',
+  },
+  stage: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: 108,
+  },
   meter: {
     position: 'absolute',
     top: '16%',
