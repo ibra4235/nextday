@@ -39,6 +39,8 @@ const copy = {
     notHungry: 'Aç değil.',
     notSleepy: 'Uykusu yok.',
     chooseBaby: 'Yavruyu seç',
+    pixel: 'Piksel',
+    dimensional: '3D',
   },
   en: {
     eggLabel: 'Egg',
@@ -78,6 +80,8 @@ const copy = {
     notHungry: 'Not hungry.',
     notSleepy: 'Not sleepy.',
     chooseBaby: 'Choose your baby',
+    pixel: 'Pixel',
+    dimensional: '3D',
   },
 } as const;
 

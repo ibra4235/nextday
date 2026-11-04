@@ -1,20 +1,23 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import type { Character } from '../characters/catalog';
+import { SheetFrame } from './SheetFrame';
 import { resolveLanguage } from '../i18n/locale';
 import { stringsFor } from '../i18n/strings';
 import { ActionClip } from '../motion/ActionClip';
 import { clipFor } from '../motion/actionClips';
 import type { CareKind } from '../storage/care';
+import type { BabyLook } from '../storage/look';
 
 type Props = {
   character: Character;
+  look: BabyLook;
   action: CareKind | null;
   night: boolean;
   onActionEnd: () => void;
 };
 
-export function BabyStage({ character, action, night, onActionEnd }: Props) {
+export function BabyStage({ character, look, action, night, onActionEnd }: Props) {
   const language = resolveLanguage();
   const copy = stringsFor(language);
   const name = language === 'en' ? character.en : character.tr;
@@ -24,7 +27,7 @@ export function BabyStage({ character, action, night, onActionEnd }: Props) {
 
   return (
     <View pointerEvents="none" style={styles.stage} testID="baby-stage" accessibilityLabel={name}>
-      <Image accessible={false} source={character.image} resizeMode="contain" style={styles.photo} />
+      <SheetFrame source={character.image} look={look} />
       {showClip ? (
         <View style={styles.clip}>
           <ActionClip
@@ -59,10 +62,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#1C1410',
-  },
-  photo: {
-    width: '100%',
-    height: '100%',
   },
   clip: {
     position: 'absolute',

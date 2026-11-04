@@ -7,6 +7,7 @@ import type { Character } from '../characters/catalog';
 import { resolveLanguage } from '../i18n/locale';
 import { stringsFor } from '../i18n/strings';
 import type { CareKind } from '../storage/care';
+import { loadLook } from '../storage/look';
 
 const ACTIONS: readonly CareKind[] = ['food', 'milk', 'sleep', 'training', 'talk'];
 
@@ -20,6 +21,7 @@ export function DragonScreen({ character, onClose }: Props) {
   const copy = stringsFor(language);
   const name = language === 'en' ? character.en : character.tr;
   const [action, setAction] = useState<CareKind | null>(null);
+  const [look] = useState(() => loadLook());
   const labels: Record<CareKind, string> = {
     food: copy.food,
     milk: copy.milk,
@@ -38,7 +40,7 @@ export function DragonScreen({ character, onClose }: Props) {
         <Text style={styles.title}>{name}</Text>
       </View>
       <View style={styles.stage} testID={`dragon-${character.id}`}>
-        <BabyStage character={character} action={action} night={false} onActionEnd={() => setAction(null)} />
+        <BabyStage character={character} look={look} action={action} night={false} onActionEnd={() => setAction(null)} />
       </View>
       <View style={styles.row}>
         {ACTIONS.map((kind) => (

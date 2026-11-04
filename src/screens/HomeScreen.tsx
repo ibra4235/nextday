@@ -15,6 +15,7 @@ import type { PerformerHandle } from '../motion/usePerformance';
 import type { CareKind } from '../storage/care';
 import { loadCares, saveCare } from '../storage/care';
 import { addCrack, loadCracks } from '../storage/cracks';
+import { loadLook, saveLook, type BabyLook } from '../storage/look';
 import { loadPetId, savePetId } from '../storage/pet';
 import type { Vitals } from '../storage/vitals';
 import { applyCare, isDead, openVitals } from '../storage/vitals';
@@ -37,6 +38,7 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
   const [reply, setReply] = useState('');
   const [savingKind, setSavingKind] = useState<CareKind | null>(null);
   const [petId, setPetId] = useState<string | null>(() => loadPetId());
+  const [look, setLook] = useState<BabyLook>(() => loadLook());
   const [careCount, setCareCount] = useState(() => loadCares().length);
   const [hatching, setHatching] = useState(() => loadPetId() === null && loadCares().length >= HATCH_AT);
   const [action, setAction] = useState<CareKind | null>(null);
@@ -141,6 +143,7 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
       {pet ? (
         <BabyStage
           character={pet}
+          look={look}
           action={action}
           night={!dead && night}
           onActionEnd={() => setAction(null)}
@@ -169,6 +172,36 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
           </Text>
         </View>
       )}
+      {pet ? (
+        <View style={styles.lookBar} testID="look-switch">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={copy.pixel}
+            accessibilityState={{ selected: look === 'pixel' }}
+            testID="look-pixel"
+            onPress={() => {
+              setLook('pixel');
+              saveLook('pixel');
+            }}
+            style={[styles.lookChoice, look === 'pixel' && styles.lookChosen]}
+          >
+            <Text style={[styles.lookLabel, look === 'pixel' && styles.lookLabelChosen]}>{copy.pixel}</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={copy.dimensional}
+            accessibilityState={{ selected: look === 'dimensional' }}
+            testID="look-3d"
+            onPress={() => {
+              setLook('dimensional');
+              saveLook('dimensional');
+            }}
+            style={[styles.lookChoice, look === 'dimensional' && styles.lookChosen]}
+          >
+            <Text style={[styles.lookLabel, look === 'dimensional' && styles.lookLabelChosen]}>{copy.dimensional}</Text>
+          </Pressable>
+        </View>
+      ) : null}
       <Meter label={copy.hunger} value={vitals.hunger} testID="hunger-bar" tone="hunger" side="left" />
       <Meter label={copy.sleep} value={vitals.sleep} testID="sleep-bar" tone="sleep" side="right" />
       {dead ? (
@@ -259,6 +292,37 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: '#1C1410',
+  },
+  lookBar: {
+    position: 'absolute',
+    top: 58,
+    left: 0,
+    right: 0,
+    zIndex: 5,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  lookChoice: {
+    minWidth: 96,
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E4D5C3',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: 'rgba(28, 20, 16, 0.92)',
+  },
+  lookChosen: {
+    backgroundColor: '#E4D5C3',
+  },
+  lookLabel: {
+    color: '#F3EBE3',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  lookLabelChosen: {
+    color: '#1C1410',
   },
   count: {
     position: 'absolute',
