@@ -19,11 +19,12 @@ import { saveRegistration } from '../storage/records';
 
 type Props = {
   onAdmin: () => void;
+  onSaved: () => void;
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function RegistrationScreen({ onAdmin }: Props) {
+export function RegistrationScreen({ onAdmin, onSaved }: Props) {
   const copy = stringsFor(resolveLanguage());
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
@@ -62,7 +63,7 @@ export function RegistrationScreen({ onAdmin }: Props) {
       setAge('');
       setGender(null);
       setEmail('');
-      setNotice(copy.saved);
+      onSaved();
     } catch {
       setError(copy.saveFailed);
     } finally {

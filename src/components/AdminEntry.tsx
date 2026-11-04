@@ -5,9 +5,10 @@ import { stringsFor } from '../i18n/strings';
 
 type Props = {
   onPress: () => void;
+  inline?: boolean;
 };
 
-export function AdminEntry({ onPress }: Props) {
+export function AdminEntry({ onPress, inline = false }: Props) {
   const copy = stringsFor(resolveLanguage());
 
   return (
@@ -17,7 +18,7 @@ export function AdminEntry({ onPress }: Props) {
       testID="admin-entry"
       hitSlop={12}
       onPress={onPress}
-      style={styles.entry}
+      style={inline ? styles.inline : styles.entry}
     >
       <Text style={styles.label}>{copy.admin}</Text>
     </Pressable>
@@ -33,8 +34,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
   },
+  inline: {
+    alignSelf: 'center',
+    marginBottom: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+  },
   label: {
-    color: '#A89888',
+    color: '#E4D5C3',
     fontSize: 13,
     letterSpacing: 0.4,
   },
