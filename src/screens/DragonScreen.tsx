@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Character } from '../characters/catalog';
 import { resolveLanguage } from '../i18n/locale';
 import { stringsFor } from '../i18n/strings';
-import { VoxelDragon } from '../motion/VoxelDragon';
+import { PicturePerformer } from '../motion/PicturePerformer';
 import type { PerformerHandle } from '../motion/usePerformance';
 import type { CareKind } from '../storage/care';
 
@@ -39,7 +39,14 @@ export function DragonScreen({ character, onClose }: Props) {
         <Text style={styles.title}>{name}</Text>
       </View>
       <View style={styles.stage} testID={`dragon-${character.id}`}>
-        <VoxelDragon ref={dragon} color={character.color} label={name} />
+        <PicturePerformer
+          ref={dragon}
+          source={character.image}
+          label={name}
+          testID="designed-dragon"
+          layout="frame"
+          mouth={{ x: 0.68, y: 0.44 }}
+        />
       </View>
       <View style={styles.row}>
         {ACTIONS.map((kind) => (

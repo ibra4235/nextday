@@ -1,12 +1,12 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AdminEntry } from '../components/AdminEntry';
 import { EggCracks } from '../components/EggCracks';
 import { resolveLanguage } from '../i18n/locale';
 import { stringsFor } from '../i18n/strings';
-import { VoxelEgg } from '../motion/VoxelEgg';
+import { PicturePerformer } from '../motion/PicturePerformer';
 import type { PerformerHandle } from '../motion/usePerformance';
 import type { CareKind } from '../storage/care';
 import { saveCare } from '../storage/care';
@@ -16,6 +16,7 @@ import { applyCare, isDead, openVitals } from '../storage/vitals';
 
 const REPLY_MS = 8000;
 
+const opening = require('../../assets/nextday-opening-9x16.jpg');
 const ACTIONS: readonly CareKind[] = ['food', 'milk', 'sleep', 'training', 'talk'];
 
 type Props = {
@@ -31,8 +32,6 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
   const [savingKind, setSavingKind] = useState<CareKind | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const egg = useRef<PerformerHandle>(null);
-  const { width, height } = useWindowDimensions();
-  const eggWidth = Math.max(210, Math.min(width - 148, height * 0.5, 460));
   const dead = isDead(vitals);
 
   useEffect(() => {
@@ -88,11 +87,16 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
-      <View style={styles.stage} pointerEvents="none">
-        <View style={{ width: eggWidth }}>
-          <VoxelEgg ref={egg} alive={!dead} overlay={<EggCracks count={cracks} />} />
-        </View>
-      </View>
+      <PicturePerformer
+        ref={egg}
+        source={opening}
+        label={copy.eggLabel}
+        testID="designed-egg"
+        alive={!dead}
+        layout="fill"
+        mouth={{ x: 0.6, y: 0.42 }}
+        overlay={<EggCracks count={cracks} />}
+      />
       <Meter label={copy.hunger} value={vitals.hunger} testID="hunger-bar" tone="hunger" side="left" />
       <Meter label={copy.sleep} value={vitals.sleep} testID="sleep-bar" tone="sleep" side="right" />
       {dead ? (
@@ -183,12 +187,6 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: '#1C1410',
-  },
-  stage: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingBottom: 108,
   },
   meter: {
     position: 'absolute',

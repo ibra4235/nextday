@@ -13,6 +13,7 @@ export const ACTION_MS: Record<CareKind, number> = {
 export type Pose = {
   scaleX: number;
   scaleY: number;
+  translateX: number;
   translateY: number;
   rotateDeg: number;
   mouth: number;
@@ -38,9 +39,10 @@ function rise(phase: number, start: number, end: number): number {
 
 function basePose(swell: number): Pose {
   return {
-    scaleX: 1 + 0.12 * swell,
-    scaleY: 1 + 0.22 * swell,
-    translateY: -16 * swell,
+    scaleX: 1 + 0.1 * swell,
+    scaleY: 1 + 0.18 * swell,
+    translateX: 0,
+    translateY: -18 * swell,
     rotateDeg: 0,
     mouth: 0,
     lid: 0,
@@ -94,11 +96,12 @@ export function poseFor(mode: PerformanceMode, phase: number, timeMs: number, al
   }
 
   if (mode === 'training') {
-    const step = Math.sin(phase * Math.PI * 8);
+    const step = Math.sin(phase * Math.PI * 14);
     pose.run = step;
     pose.hop = Math.abs(step);
+    pose.translateX = step * 22;
     pose.translateY += -pose.hop * 26;
-    pose.rotateDeg = step * 8;
+    pose.rotateDeg = step * 7;
     pose.wing = step;
     return pose;
   }
