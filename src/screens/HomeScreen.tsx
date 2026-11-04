@@ -37,6 +37,7 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
   const [reply, setReply] = useState('');
   const [savingKind, setSavingKind] = useState<CareKind | null>(null);
   const [petId, setPetId] = useState<string | null>(() => loadPetId());
+  const [careCount, setCareCount] = useState(() => loadCares().length);
   const [hatching, setHatching] = useState(() => loadPetId() === null && loadCares().length >= HATCH_AT);
   const [action, setAction] = useState<CareKind | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -89,28 +90,30 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
     const block = blockedCare(kind, current);
     if (block) {
       showLine(block === 'hunger' ? copy.notHungry : copy.notSleepy);
-      return;
-    }
-    if (pet) {
+    } else if (pet) {
       setAction(kind);
     } else {
       egg.current?.play(kind);
     }
     setSavingKind(kind);
     try {
-      const next = applyCare(kind);
-      setVitals(next);
-      if (isDead(next)) {
-        setReply('');
-        return;
+      if (!block) {
+        const next = applyCare(kind);
+        setVitals(next);
+        if (isDead(next)) {
+          setReply('');
+          return;
+        }
+        setCracks(addCrack());
+        if (!pet) {
+          showLine(replies[kind]);
+        }
       }
       await saveCare(kind);
-      setCracks(addCrack());
-      if (!pet) {
-        showLine(replies[kind]);
-        if (loadCares().length >= HATCH_AT) {
-          setHatching(true);
-        }
+      const count = loadCares().length;
+      setCareCount(count);
+      if (!pet && count >= HATCH_AT) {
+        setHatching(true);
       }
     } catch {
       setReply('');
@@ -153,6 +156,18 @@ export function HomeScreen({ onAdmin, onCharacters }: Props) {
           mouth={{ x: 0.6, y: 0.42 }}
           overlay={<EggCracks count={cracks} />}
         />
+      )}
+      {pet ? null : (
+        <View
+          pointerEvents="none"
+          style={styles.count}
+          testID="care-count"
+          accessibilityLabel={`${careCount}/${HATCH_AT}`}
+        >
+          <Text style={styles.countText}>
+            {careCount}/{HATCH_AT}
+          </Text>
+        </View>
       )}
       <Meter label={copy.hunger} value={vitals.hunger} testID="hunger-bar" tone="hunger" side="left" />
       <Meter label={copy.sleep} value={vitals.sleep} testID="sleep-bar" tone="sleep" side="right" />
@@ -244,6 +259,26 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: '#1C1410',
+  },
+  count: {
+    position: 'absolute',
+    top: 58,
+    left: 0,
+    right: 0,
+    zIndex: 3,
+    alignItems: 'center',
+  },
+  countText: {
+    overflow: 'hidden',
+    minWidth: 92,
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    backgroundColor: '#1C1410',
+    color: '#FFFFFF',
+    fontSize: 28,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   meter: {
     position: 'absolute',

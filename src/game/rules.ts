@@ -3,7 +3,7 @@ import type { CareKind } from '../storage/care';
 export const HATCH_AT = 50;
 const FULL = 100;
 
-/** Food and milk do nothing when hunger is already full. Sleep does nothing when sleep is already full. */
+/** Food and milk add no hunger when it is already full. Sleep adds no sleep when it is already full. The tap still counts. */
 export function blockedCare(
   kind: CareKind,
   vitals: { hunger: number; sleep: number },
