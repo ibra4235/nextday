@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Image, StyleSheet, View, type ImageSourcePropType, type LayoutChangeEvent } from 'react-native';
 
 import type { BabyLook } from '../storage/look';
@@ -8,10 +8,11 @@ const SHEET_ASPECT = 16 / 9;
 type Props = {
   source: ImageSourcePropType;
   look: BabyLook;
+  children?: ReactNode;
 };
 
 /** One side of a 16:9 design sheet, cropped into a 9:11 frame with the dragon centered. */
-export function SheetFrame({ source, look }: Props) {
+export function SheetFrame({ source, look, children }: Props) {
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   function onLayout(event: LayoutChangeEvent) {
@@ -34,18 +35,17 @@ export function SheetFrame({ source, look }: Props) {
           style={[styles.sheet, { width: imageWidth, height: imageHeight, left }]}
         />
       ) : null}
+      {children}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   frame: {
-    width: '58%',
-    maxWidth: 280,
-    aspectRatio: 9 / 11,
+    width: '100%',
+    height: '100%',
     overflow: 'hidden',
-    borderRadius: 18,
-    backgroundColor: '#2A211C',
+    backgroundColor: '#1C1410',
   },
   sheet: {
     position: 'absolute',

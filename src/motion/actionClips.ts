@@ -10,7 +10,7 @@ const clips = {
   talkEn: require('../../assets/actions/dragon-mouth-sample.mp4'),
 } as const;
 
-export type ClipSource = (typeof clips)[keyof typeof clips];
+export type ClipSource = number;
 
 /** Turkish talk is the clip that already carries its line. English talk is the mouth clip. */
 export function clipFor(kind: CareKind, language: AppLanguage): ClipSource {
