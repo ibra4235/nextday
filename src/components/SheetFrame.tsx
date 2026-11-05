@@ -68,7 +68,7 @@ function TalkFrames({
     setIndex(0);
     const timer = setInterval(() => {
       setIndex((current) => (current + 1) % frames.length);
-    }, 90);
+    }, 125);
     return () => clearInterval(timer);
   }, [frames]);
 
