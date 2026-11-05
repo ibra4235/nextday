@@ -8,14 +8,9 @@ import { stringsFor } from '../i18n/strings';
 import { ActionClip } from '../motion/ActionClip';
 import { babyClip } from '../motion/babyClips';
 import { ACTION_MS } from '../motion/pose';
+import { talkFrames } from '../motion/talkFrames';
 import type { CareKind } from '../storage/care';
 import type { BabyLook } from '../storage/look';
-
-/** Defne's smile on the 1280×720 sheet. Talk opens this point only. */
-const DEFNE_MOUTH: Record<BabyLook, { x: number; y: number }> = {
-  pixel: { x: 278, y: 297 },
-  dimensional: { x: 918, y: 297 },
-};
 
 type Props = {
   character: Character;
@@ -33,7 +28,7 @@ export function BabyStage({ character, look, action, night, onActionEnd }: Props
   const loop = action === null && night;
   const playing = action !== null || night;
   const clip = playing && kind !== 'talk' ? babyClip(character.id, look, kind) : null;
-  const mouth = action === 'talk' && character.id === '03' ? DEFNE_MOUTH[look] : null;
+  const jaw = action === 'talk' ? talkFrames(character.id, look) : null;
   const onEndRef = useRef(onActionEnd);
   onEndRef.current = onActionEnd;
 
@@ -47,7 +42,7 @@ export function BabyStage({ character, look, action, night, onActionEnd }: Props
 
   return (
     <View pointerEvents="none" style={styles.stage} testID="baby-stage" accessibilityLabel={name}>
-      <SheetFrame source={character.image} look={look} mouth={mouth}>
+      <SheetFrame source={character.image} look={look} talkFrames={jaw}>
         {clip ? (
           <ActionClip
             key={`${character.id}-${look}-${kind}-${loop ? 'night' : 'once'}`}
