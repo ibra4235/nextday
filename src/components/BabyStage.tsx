@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { Character } from '../characters/catalog';
@@ -6,8 +7,15 @@ import { resolveLanguage } from '../i18n/locale';
 import { stringsFor } from '../i18n/strings';
 import { ActionClip } from '../motion/ActionClip';
 import { babyClip } from '../motion/babyClips';
+import { ACTION_MS } from '../motion/pose';
 import type { CareKind } from '../storage/care';
 import type { BabyLook } from '../storage/look';
+
+/** Defne's smile on the 1280×720 sheet. Talk opens this point only. */
+const DEFNE_MOUTH: Record<BabyLook, { x: number; y: number }> = {
+  pixel: { x: 278, y: 297 },
+  dimensional: { x: 918, y: 297 },
+};
 
 type Props = {
   character: Character;
@@ -24,11 +32,22 @@ export function BabyStage({ character, look, action, night, onActionEnd }: Props
   const kind: CareKind = action ?? 'sleep';
   const loop = action === null && night;
   const playing = action !== null || night;
-  const clip = playing ? babyClip(character.id, look, kind) : null;
+  const clip = playing && kind !== 'talk' ? babyClip(character.id, look, kind) : null;
+  const mouth = action === 'talk' && character.id === '03' ? DEFNE_MOUTH[look] : null;
+  const onEndRef = useRef(onActionEnd);
+  onEndRef.current = onActionEnd;
+
+  useEffect(() => {
+    if (action !== 'talk') {
+      return;
+    }
+    const timer = setTimeout(() => onEndRef.current(), ACTION_MS.talk);
+    return () => clearTimeout(timer);
+  }, [action]);
 
   return (
     <View pointerEvents="none" style={styles.stage} testID="baby-stage" accessibilityLabel={name}>
-      <SheetFrame source={character.image} look={look}>
+      <SheetFrame source={character.image} look={look} mouth={mouth}>
         {clip ? (
           <ActionClip
             key={`${character.id}-${look}-${kind}-${loop ? 'night' : 'once'}`}
@@ -72,7 +91,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 16,
     right: 16,
-    bottom: 18,
+    bottom: 168,
     alignItems: 'center',
   },
   line: {
