@@ -350,6 +350,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
     alignItems: 'center',
     width: 72,
+    opacity: 0.5,
   },
   meterLeft: {
     left: 6,
