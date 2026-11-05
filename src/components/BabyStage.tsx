@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import type { Character } from '../characters/catalog';
 import { SheetFrame } from './SheetFrame';
@@ -26,25 +25,9 @@ export function BabyStage({ character, look, action, night, onActionEnd }: Props
   const loop = action === null && night;
   const playing = action !== null || night;
   const clip = playing ? babyClip(character.id, look, kind) : null;
-  const [space, setSpace] = useState({ width: 0, height: 0 });
-
-  function onSpace(event: LayoutChangeEvent) {
-    const { width, height } = event.nativeEvent.layout;
-    setSpace((current) => (current.width === width && current.height === height ? current : { width, height }));
-  }
-
-  let frameHeight = space.height;
-  let frameWidth = space.height * (9 / 11);
-  if (space.width > 0 && frameWidth < space.width) {
-    frameWidth = space.width;
-    frameHeight = space.width * (11 / 9);
-  }
 
   return (
     <View pointerEvents="none" style={styles.stage} testID="baby-stage" accessibilityLabel={name}>
-      <View style={styles.space} onLayout={onSpace}>
-      {frameWidth > 0 && frameHeight > 0 ? (
-      <View style={{ width: frameWidth, height: frameHeight }}>
       <SheetFrame source={character.image} look={look}>
         {clip ? (
           <ActionClip
@@ -65,9 +48,6 @@ export function BabyStage({ character, look, action, night, onActionEnd }: Props
           </View>
         ) : null}
       </SheetFrame>
-      </View>
-      ) : null}
-      </View>
     </View>
   );
 }
@@ -79,15 +59,6 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 0,
-    paddingTop: 108,
-    paddingBottom: 156,
-    backgroundColor: '#1C1410',
-  },
-  space: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
   },
   zzz: {
     position: 'absolute',

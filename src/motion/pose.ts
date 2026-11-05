@@ -37,12 +37,12 @@ function rise(phase: number, start: number, end: number): number {
   return clamp01((phase - start) / (end - start));
 }
 
-function basePose(swell: number): Pose {
+function basePose(): Pose {
   return {
-    scaleX: 1 + 0.1 * swell,
-    scaleY: 1 + 0.18 * swell,
+    scaleX: 1,
+    scaleY: 1,
     translateX: 0,
-    translateY: -18 * swell,
+    translateY: 0,
     rotateDeg: 0,
     mouth: 0,
     lid: 0,
@@ -58,11 +58,9 @@ function basePose(swell: number): Pose {
   };
 }
 
-/** Breath is a slow swell. Each care action is a short pose on top of a quieter breath. */
-export function poseFor(mode: PerformanceMode, phase: number, timeMs: number, alive: boolean): Pose {
-  const wave = alive ? 0.5 + 0.5 * Math.sin((timeMs / 2600) * Math.PI * 2) : 0;
-  const quiet = mode === 'sleep' ? 0.25 : mode === 'idle' ? 1 : 0.4;
-  const pose = basePose(wave * (alive ? quiet : 0));
+/** The picture stays at a fixed size. Care poses move parts around it. */
+export function poseFor(mode: PerformanceMode, phase: number, _timeMs: number, alive: boolean): Pose {
+  const pose = basePose();
   if (!alive || mode === 'idle') {
     return pose;
   }
@@ -91,7 +89,6 @@ export function poseFor(mode: PerformanceMode, phase: number, timeMs: number, al
     pose.sleepZ = asleep;
     pose.wing = -asleep;
     pose.translateY += asleep * 18;
-    pose.scaleY -= asleep * 0.06;
     return pose;
   }
 

@@ -25,13 +25,10 @@ export const PicturePerformer = forwardRef<PerformerHandle, Props>(function Pict
   const { mode, pose, phase, play } = usePerformance(alive);
   useImperativeHandle(ref, () => ({ play }), [play]);
 
-  const bite = mode === 'food' || mode === 'talk' ? pose.mouth : 0;
   const transform = [
     { translateX: pose.translateX },
     { translateY: pose.translateY + pose.headDip * 14 },
     { rotate: `${pose.rotateDeg}deg` },
-    { scaleX: pose.scaleX + bite * 0.08 },
-    { scaleY: pose.scaleY - bite * 0.1 },
   ];
 
   return (
